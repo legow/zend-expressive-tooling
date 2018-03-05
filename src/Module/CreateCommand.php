@@ -12,6 +12,7 @@ namespace Zend\Expressive\Tooling\Module;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class CreateCommand extends Command
@@ -29,6 +30,8 @@ EOT;
 
     public const HELP_ARG_MODULE = 'The module to create and register with the application.';
 
+    public const HELP_OPT_NAMESPACE = 'Create the module with this root namespace';
+
     /**
      * Configure command.
      */
@@ -37,6 +40,12 @@ EOT;
         $this->setDescription('Create and register a middleware module with the application');
         $this->setHelp(self::HELP);
         CommandCommonOptions::addDefaultOptionsAndArguments($this);
+        $this->addOption(
+            'namespace',
+            null,
+            InputOption::VALUE_REQUIRED,
+            self::HELP_OPT_NAMESPACE
+        );
     }
 
     /**
@@ -50,11 +59,12 @@ EOT;
     protected function execute(InputInterface $input, OutputInterface $output) : int
     {
         $module = $input->getArgument('module');
+        $namespace = $input->getOption('namespace') ?: null;
         $composer = $input->getOption('composer') ?: 'composer';
         $modulesPath = CommandCommonOptions::getModulesPath($input);
 
         $creation = new Create();
-        $message = $creation->process($module, $modulesPath, getcwd());
+        $message = $creation->process($module, $namespace, $modulesPath, getcwd());
         $output->writeln(sprintf('<info>%s</info>', $message));
 
         $registerCommand = $this->getRegisterCommandName();

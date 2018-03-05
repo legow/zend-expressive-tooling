@@ -70,12 +70,12 @@ EOT;
     /**
      * Create source tree for the expressive module.
      */
-    public function process(string $moduleName, string $modulesPath, string $projectDir) : string
+    public function process(string $moduleName, ?string $namesapce, string $modulesPath, string $projectDir) : string
     {
         $modulePath = sprintf('%s/%s/%s', $projectDir, $modulesPath, $moduleName);
 
         $this->createDirectoryStructure($modulePath, $moduleName);
-        $this->createConfigProvider($modulePath, $moduleName);
+        $this->createConfigProvider($modulePath, $moduleName, $namesapce);
 
         return sprintf('Created module %s in %s', $moduleName, $modulePath);
     }
@@ -120,13 +120,13 @@ EOT;
     /**
      * Creates ConfigProvider for new expressive module.
      */
-    private function createConfigProvider(string $modulePath, string $moduleName) : void
+    private function createConfigProvider(string $modulePath, string $moduleName, ?string $rootNamespace) : void
     {
         file_put_contents(
             sprintf('%s/src/ConfigProvider.php', $modulePath),
             sprintf(
                 self::TEMPLATE_CONFIG_PROVIDER,
-                $moduleName,
+                $this->createModuleNamespace($moduleName, $rootNamespace),
                 $this->createTemplateNamespace($moduleName)
             )
         );
@@ -137,5 +137,14 @@ EOT;
         $namespace = str_replace('\\', '-', $moduleName);
         $namespace = strtolower($namespace);
         return $namespace;
+    }
+
+    private function createModuleNamespace(string $moduleName, ?string $rootNamespace): string
+    {
+        if ($rootNamespace) {
+            $components = explode('\\', $rootNamespace);
+            $rootNamespace = implode('\\', array_map('ucfirst', $components));
+        }
+        return ltrim($rootNamespace.'\\'.$moduleName, '\\');
     }
 }
