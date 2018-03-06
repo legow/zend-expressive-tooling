@@ -72,6 +72,7 @@ EOT;
         return $register->run(new ArrayInput([
             'command'        => $registerCommand,
             'module'         => $module,
+            '--namespace'    => $namespace,
             '--composer'     => $composer,
             '--modules-path' => $modulesPath,
         ]), $output);
